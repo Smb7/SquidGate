@@ -77,6 +77,14 @@ async function run(): Promise<void> {
         `, ${changedFiles.length} files`
     );
 
+    if (!diffResult.diff.trim()) {
+      core.notice('No file changes to review. Skipping the security scan.');
+      core.setOutput('findings-count', '0');
+      core.setOutput('blocking-findings-count', '0');
+      core.setOutput('conclusion', 'success');
+      return;
+    }
+
     const systemPrompt = buildSystemPrompt(config);
     const userPrompt = buildUserPrompt(
       diffResult.diff,
