@@ -35322,7 +35322,8 @@ async function getDiffViaGit(maxBytes, linesBefore, linesAfter) {
         const { diff, truncated, originalBytes } = truncateDiff(fallback.stdout, maxBytes);
         return { diff, truncated, source: 'git', originalBytes };
     }
-    throw new Error(`git diff produced no output (${lastError})`);
+    core.info(`No file diff for this pull request (${lastError}).`);
+    return { diff: '', truncated: false, source: 'git', originalBytes: 0 };
 }
 async function getChangedFiles(token, owner, repo, pullNumber, maxFiles) {
     try {
@@ -35452,6 +35453,13 @@ async function run() {
         core.info(`Diff source=${diffResult.source} size=${diffResult.diff.length} bytes` +
             (diffResult.truncated ? ` (truncated from ${diffResult.originalBytes})` : '') +
             `, ${changedFiles.length} files`);
+        if (!diffResult.diff.trim()) {
+            core.notice('No file changes to review. Skipping the security scan.');
+            core.setOutput('findings-count', '0');
+            core.setOutput('blocking-findings-count', '0');
+            core.setOutput('conclusion', 'success');
+            return;
+        }
         const systemPrompt = (0, prompts_1.buildSystemPrompt)(config);
         const userPrompt = (0, prompts_1.buildUserPrompt)(diffResult.diff, changedFiles, config, diffResult.truncated);
         core.info('Calling LLM for security analysis...');

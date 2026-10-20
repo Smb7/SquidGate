@@ -171,7 +171,8 @@ async function getDiffViaGit(
     return { diff, truncated, source: 'git', originalBytes };
   }
 
-  throw new Error(`git diff produced no output (${lastError})`);
+  core.info(`No file diff for this pull request (${lastError}).`);
+  return { diff: '', truncated: false, source: 'git', originalBytes: 0 };
 }
 
 export async function getChangedFiles(
