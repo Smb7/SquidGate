@@ -12,8 +12,10 @@ permissions:
 
 jobs:
   squidgate:
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, Linux, X64, squidsec]
+    # Fork PRs run on a GitHub-hosted runner. They receive no repository secrets,
+    # so the scan is skipped with a notice instead of running untrusted code
+    # next to the LLM key.
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "Linux", "X64", "squidsec"]') }}
     env:
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
     steps:
@@ -31,8 +33,13 @@ jobs:
           llm-model: grok-build-0.1
           llm-base-url: https://api.x.ai/v1
 
+      - name: SquidGate skipped for fork pull requests
+        if: env.LLM_API_KEY == '' && github.event.pull_request.head.repo.fork
+        run: |
+          echo "::notice title=SquidGate::Fork pull requests do not receive LLM_API_KEY, so the diff was not scanned. A maintainer reviews these changes."
+
       - name: SquidGate not configured
-        if: env.LLM_API_KEY == ''
+        if: env.LLM_API_KEY == '' && !github.event.pull_request.head.repo.fork
         run: |
           echo "::notice title=SquidGate::Add repository secret LLM_API_KEY to enable the PR security gate."
 
