@@ -12,10 +12,9 @@ permissions:
 
 jobs:
   squidgate:
-    # Fork PRs run on a GitHub-hosted runner. They receive no repository secrets,
-    # so the scan is skipped with a notice instead of running untrusted code
-    # next to the LLM key.
-    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "Linux", "X64", "squidsec"]') }}
+    # GitHub-hosted: the self-hosted pool is not currently acquiring jobs, and
+    # fork PR code must not run on private infrastructure.
+    runs-on: ubuntu-latest
     env:
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
     steps:

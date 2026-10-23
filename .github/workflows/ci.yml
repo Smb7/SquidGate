@@ -12,9 +12,9 @@ permissions:
 
 jobs:
   test:
-    # Fork PRs run untrusted code on a GitHub-hosted runner with a read-only token.
-    # Self-hosted runners only ever run code from this repository.
-    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "Linux", "X64", "squidsec"]') }}
+    # GitHub-hosted: the self-hosted pool is not currently acquiring jobs, and
+    # GitHub-hosted runners keep fork PR code off private infrastructure.
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
