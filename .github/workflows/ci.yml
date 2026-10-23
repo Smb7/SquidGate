@@ -12,8 +12,9 @@ permissions:
 
 jobs:
   test:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, Linux, X64, squidsec]
+    # GitHub-hosted: the self-hosted pool is not currently acquiring jobs, and
+    # GitHub-hosted runners keep fork PR code off private infrastructure.
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
